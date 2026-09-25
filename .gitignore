@@ -1,0 +1,16 @@
+.venv/
+data/
+external_data/
+submissions/
+catboost_info/
+
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.jupyter_runtime/
+.model_qa/
+.leaderboard_qa/
+
+.env
+.env.*
+*.log

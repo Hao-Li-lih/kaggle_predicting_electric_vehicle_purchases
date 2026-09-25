@@ -1,0 +1,11 @@
+{
+  "best_candidate": "depth5_reference",
+  "best_original_weight": 0.0,
+  "best_iteration": 1378,
+  "seeds": [
+    42,
+    314,
+    2026
+  ],
+  "optimized_submission": "E:\\kaggle\\Predicting Electric Vehicle Purchases\\submissions\\submission_xgboost_optimized_seed_ensemble.csv"
+}
