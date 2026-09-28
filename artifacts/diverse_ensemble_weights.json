@@ -1,0 +1,24 @@
+{
+  "models": [
+    "XGBoost_FineBin_Depth5",
+    "XGBoost_FineBin_Depth3",
+    "LightGBM_GOSS",
+    "ExtraTrees",
+    "CatBoost_Lossguide"
+  ],
+  "logloss_weights": {
+    "XGBoost_FineBin_Depth5": 0.9889805723662244,
+    "XGBoost_FineBin_Depth3": 0.010623250056402916,
+    "LightGBM_GOSS": 1.1802166178983595e-06,
+    "ExtraTrees": 2.648402781120922e-11,
+    "CatBoost_Lossguide": 0.0003949973342708236
+  },
+  "rank_weights": {
+    "XGBoost_FineBin_Depth5": 1.0,
+    "XGBoost_FineBin_Depth3": 0.0,
+    "LightGBM_GOSS": 0.0,
+    "ExtraTrees": 0.0,
+    "CatBoost_Lossguide": 0.0
+  },
+  "logloss_optimization_success": true
+}

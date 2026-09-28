@@ -1,0 +1,12 @@
+{
+  "best_tuning_model": "Depth5_Baseline",
+  "ensemble_weights": {
+    "Depth5_Baseline": 0.623,
+    "Depth5_Long_LowLR": 0.267,
+    "Depth4_Long": 0.0,
+    "Depth6_Regularized": 0.0,
+    "Lossguide_31": 0.10999999999999997
+  },
+  "ensemble_tuning_auc": 0.9430086605351572,
+  "ensemble_holdout_auc": 0.9430399340288307
+}

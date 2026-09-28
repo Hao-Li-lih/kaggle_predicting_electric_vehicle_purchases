@@ -1,0 +1,7 @@
+{
+  "best_model": "XGBoost_FineBin_Reference",
+  "best_model_holdout_auc": 0.9429931637777189,
+  "best_pairwise_candidate": "XGBoost_RandomForest",
+  "best_pairwise_weight": 0.0,
+  "best_pairwise_holdout_auc": 0.9429931637777189
+}
