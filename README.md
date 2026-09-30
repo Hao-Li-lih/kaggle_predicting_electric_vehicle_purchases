@@ -2,6 +2,8 @@
 
 [中文说明](#中文说明) | [English Documentation](#english-documentation)
 
+逐轮证据与参数复盘：[实验复盘目录](docs/experiment-review/README.md) / [Experiment audit (Chinese)](docs/experiment-review/README.md)
+
 本仓库记录 Kaggle 电动汽车购买预测竞赛的完整建模过程：从数据探索、特征工程和经典机器学习基线，到高分辨率 XGBoost、异构集成与类别嵌入神经网络。所有数据列名和代码均使用英文，Notebook 中使用中文 Markdown 解释方法、用法与实验思路。
 
 This repository contains the complete modeling workflow for a Kaggle competition that predicts the probability of electric-vehicle purchase, covering exploration, feature engineering, classical baselines, high-resolution XGBoost, heterogeneous ensembles, and a categorical-embedding neural network.
@@ -21,7 +23,7 @@ This repository contains the complete modeling workflow for a Kaggle competition
 - 目标列：`Will_Buy_EV`
 - 最终输出：每个测试样本购买电动汽车的概率
 
-ROC-AUC 只关心预测排序，因此本项目不仅比较单模型精度，也重点研究 rank averaging、OOF/独立验证集权重学习以及不同随机种子的集成稳定性。
+ROC-AUC 关注预测排序，因此本项目除比较单模型外，也检验概率融合、rank averaging、调优集权重搜索与不同随机种子的集成。部分融合仅生成了提交文件，尚无独立分数；证据边界见实验复盘。
 
 ## 2. 当前成绩
 
@@ -46,7 +48,7 @@ ROC-AUC 只关心预测排序，因此本项目不仅比较单模型精度，也
 | XGBoost V2 extended depth-5 | 0.943028 |
 | XGBoost `max_bin=4096` baseline | 0.942993 |
 
-本地与线上结果共同说明：该数据集的主要提升来自高分辨率直方图切分、可靠的条件分段以及稳定的多种子平均，而不是无限增加人工交叉项。
+当前记录中，高分辨率 XGBoost 和整组精细特征有明确的本地增益；多种子与若干新融合方案已生成提交，但并非都有对应的本地或公开榜验证分数。
 
 ## 3. 数据与目录准备
 
@@ -129,13 +131,13 @@ XGBoost 是当前主模型。关键改进是将 `max_bin` 从常见的 256 逐�
 
 - PyTorch 类别嵌入网络
 - 数值特征标准化、类别特征 embedding、MLP 分类头
-- 使用验证集 ROC-AUC、early stopping 和多随机种子比较
+- 使用验证集 ROC-AUC 和 early stopping；当前神经网络仅记录一次随机种子训练
 
 神经网络表现低于主树模型，但可作为具有不同归纳偏置的候选模型。当前数据仍更适合高质量树模型。
 
 ### 5.4 外部数据实验
 
-项目测试了原始 EV adoption 数据集的先验信息，但由于原始数据与合成竞赛数据存在分布偏移，外部先验降低了验证表现，因此没有用于最终提交。
+项目测试了原始 EV adoption 数据集的先验信息。追加原始样本显著降低了竞赛数据上的验证表现，提示来源间可能存在分布或标签机制差异；现有实验未进一步分解具体原因，因此最终未采用该数据。
 
 ## 6. 验证与集成策略
 
@@ -143,9 +145,9 @@ XGBoost 是当前主模型。关键改进是将 `max_bin` 从常见的 256 逐�
 
 1. 使用固定的分层 train/tune/holdout 划分。
 2. 超参数和融合权重只在 tune 集上选择。
-3. holdout 仅用于最终无偏比较。
+3. 后期多个实验重复查看同一 holdout，因此它便于同切分比较，但不能视为跨所有迭代完全无选择偏差的最终评估。
 4. Kaggle Public Leaderboard 作为事后检查，不直接替代本地验证。
-5. 概率平均与 rank averaging 同时比较；ROC-AUC 场景通常更偏向稳定的排序融合。
+5. 概率平均与 rank averaging 同时比较，依据调优集和留出集结果选择，而不预设其中一种必然更优。
 6. 只有在验证集上带来互补收益的模型才进入集成，模型“不同”本身并不代表有效。
 
 最新 V2 结构化融合在本地学习到的主要权重约为：
@@ -154,7 +156,7 @@ XGBoost 是当前主模型。关键改进是将 `max_bin` 从常见的 256 逐�
 - 26.7%：low-learning-rate depth-5 XGBoost
 - 11.0%：Lossguide XGBoost
 
-最终还会通过多个随机种子平均降低方差，并生成 rank ensemble 与少量历史最佳提交混合版本。
+最终对多个随机种子取平均，目标是降低训练波动，并生成 rank ensemble 与少量历史最佳提交混合版本；这些新提交并非都有相应的本地或公开榜分数。
 
 ## 7. 实验演进
 
@@ -300,7 +302,7 @@ Because ROC-AUC evaluates ordering rather than a fixed classification threshold,
 | XGBoost V2 extended depth-5 | 0.943028 |
 | XGBoost `max_bin=4096` baseline | 0.942993 |
 
-The local and public results suggest that high-resolution histogram splits, reliable conditional segmentation, and seed averaging are more valuable than continually adding handcrafted interactions.
+The recorded local experiments support gains from high-resolution XGBoost and the refined feature group. Some newer seed and blend submissions were generated without a corresponding local or public score; see the experiment audit for the evidence boundaries.
 
 ## 3. Data Setup
 
@@ -383,13 +385,13 @@ XGBoost remains the strongest model family. The most important improvement was i
 
 - PyTorch categorical-embedding network
 - Standardized numeric inputs, categorical embeddings, and an MLP head
-- Validation ROC-AUC, early stopping, and multiple-seed comparisons
+- Validation ROC-AUC and early stopping; only one neural-network training seed is recorded
 
 The neural network trails the main tree models, although it remains a useful candidate with a different inductive bias. The current tabular structure still favors well-tuned boosting.
 
 ### 5.4 External-data experiment
 
-The original EV-adoption dataset was evaluated as a source of prior information. Distribution shift between the original and synthetic competition data reduced validation performance, so the external prior is not used in final submissions.
+The original EV-adoption dataset was evaluated as a source of prior information. Adding its rows substantially reduced validation performance on competition data, suggesting possible distribution or label-mechanism differences; the experiments do not isolate the cause. The external rows were therefore excluded from final training.
 
 ## 6. Validation and Ensembling
 
@@ -397,9 +399,9 @@ The workflow avoids treating the public leaderboard as the primary validation se
 
 1. Use a fixed stratified train/tune/holdout split.
 2. Select hyperparameters and ensemble weights on the tune split only.
-3. Use the holdout split once for final, less-biased comparisons.
+3. The same holdout was inspected across later iterations. It supports same-split comparisons but is not a fully untouched final evaluation across the entire project.
 4. Treat the Kaggle public leaderboard as posterior evidence rather than a replacement for local validation.
-5. Compare probability averaging with rank averaging; stable rank blends are often effective for ROC-AUC.
+5. Compare probability averaging with rank averaging on the available validation predictions, without assuming either method is inherently better.
 6. Add a model to an ensemble only when it provides validated complementary value. Diversity alone is insufficient.
 
 The latest V2 structural blend learned approximate local weights of:
@@ -408,7 +410,7 @@ The latest V2 structural blend learned approximate local weights of:
 - 26.7% low-learning-rate depth-5 XGBoost
 - 11.0% Lossguide XGBoost
 
-Multiple seeds are then averaged to reduce variance. Rank ensembles and conservative blends with the previous public best are also produced.
+Multiple seeds are averaged with the aim of reducing training variance. Rank ensembles and conservative blends with the previous public best are also produced; not every new submission has a corresponding local or public score.
 
 ## 7. Experiment Progression
 
